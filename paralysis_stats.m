@@ -19,8 +19,13 @@ for i = 1:3 % Loop over methods
     method(i).conf_vec = method(i).conf(:);
 end
 
+%% Convert baseline reads into one matrix
+all_ep_or_no = nan(size(method(1).correct,2),size(method(1).correct,1),3);
+for i = 1:3 % loop over methods
+    all_ep_or_no(:,:,i) = method(i).dc'; % transpose to convert to n_reviewers x n_eegs
+end
 
-%% Convert into one matrix
+%% Convert accuracy into one matrix
 % Convert into one single 3 dimensional matrix n_reviewers  x n_eegs x
 % n_methods
 all_reads = nan(size(method(1).correct,2),size(method(1).correct,1),3);
@@ -54,6 +59,13 @@ fprintf('\n\nKappa statistics:\n');
 fprintf('Baseline: %1.1f\n',kappa(1));
 fprintf('AR: %1.1f\n',kappa(2));
 fprintf('Paralysis: %1.1f\n',kappa(3));
+
+%% Compare sensitivity and specificity
+[sensitivity,specificity] = sens_and_spec(all_ep_or_no,method(4).dc);
+fprintf('\n\nSensitivity and specificity (respectively):\n');
+fprintf('Baseline: %1.1f%%, %1.1f%%\n',sensitivity(1)*100,specificity(1)*100);
+fprintf('AR: %1.1f%%, %1.1f%%\n',sensitivity(2)*100,specificity(2)*100);
+fprintf('Paralysis: %1.1f%%, %1.1f%%\n',sensitivity(3)*100,specificity(3)*100);
 
 %% Compare confidence of reads
 fprintf('\n\nAverage percent reads that are confident:\n');
