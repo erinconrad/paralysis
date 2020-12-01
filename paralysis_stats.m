@@ -20,7 +20,6 @@ for i = 1:3 % Loop over methods
 end
 
 
-
 %% Convert into one matrix
 % Convert into one single 3 dimensional matrix n_reviewers  x n_eegs x
 % n_methods
@@ -32,11 +31,9 @@ n_eegs = size(all_reads,2);
 n_reviewers = size(all_reads,1);
 
 %% Basic info
-
 % How many patients are seizing?
 fprintf('\n\n%d of %d patients had epileptiform discharges per clinical report.\n',...
     sum(method(4).dc),n_eegs);
-
 
 %% Compare percentages correct
 n_reads = length(method(1).correct(:));
@@ -68,7 +65,11 @@ fprintf('Paralysis: %1.1f%%\n',sum(method(3).conf(:))/n_reads*100);
 p12 = mcnemar_test([method(1).conf_vec,method(2).conf_vec]);
 p13 = mcnemar_test([method(1).conf_vec,method(3).conf_vec]);
 fprintf('\n\nMcNemar test comparing baseline to AR: p = %1.3f\n',p12);
-fprintf('McNemar test comparing baseline to paralysis: p = %1.3f\n',p13);
+if p13<0.001
+    fprintf('McNemar test comparing baseline to paralysis: p < 0.001\n');
+else
+    fprintf('McNemar test comparing baseline to paralysis: p = %1.3f\n',p13);
+end
 
 %% Make some plots
 % Plot % correct for each reviewer by method
