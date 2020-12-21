@@ -26,6 +26,12 @@ for i = 1:3 % loop over methods
     all_ep_or_no(:,:,i) = method(i).dc'; % transpose to convert to n_reviewers x n_eegs
 end
 
+%% Convert confidence into one matrix
+all_conf = nan(size(method(1).correct,2),size(method(1).correct,1),3);
+for i = 1:3
+    all_conf(:,:,i) = method(i).conf';
+end
+
 %% Convert accuracy into one matrix
 % Convert into one single 3 dimensional matrix n_reviewers  x n_eegs x
 % n_methods
@@ -41,8 +47,11 @@ n_reviewers = size(all_reads,1);
 fprintf('\n\n%d of %d patients had epileptiform discharges per clinical report.\n',...
     sum(method(4).dc),n_eegs);
 
+%% Bootstrap statistics
+pval = bootstrap_stats(all_ep_or_no,method(4).dc,all_conf,1e4);
+
 %% Permutation test statistics
-pval = more_general_perm_test(all_ep_or_no,method(4).dc);
+%pval = more_general_perm_test(all_ep_or_no,method(4).dc);
 
 
 
@@ -92,8 +101,10 @@ fprintf('\n\nAverage percent reads that are confident:\n');
 fprintf('Baseline: %1.1f%%\n',sum(method(1).conf(:))/n_reads*100);
 fprintf('AR: %1.1f%%\n',sum(method(2).conf(:))/n_reads*100);
 fprintf('Paralysis: %1.1f%%\n',sum(method(3).conf(:))/n_reads*100);
+fprintf('Confidence p-value: %1.3f\n',pval.conf);
 
 %% Are reads more often confident for each compared to baseline by McNemar test
+%{
 p12 = mcnemar_test([method(1).conf_vec,method(2).conf_vec]);
 p13 = mcnemar_test([method(1).conf_vec,method(3).conf_vec]);
 fprintf('\n\nMcNemar test comparing baseline to AR: p = %1.3f\n',p12);
@@ -102,9 +113,10 @@ if p13<0.001
 else
     fprintf('McNemar test comparing baseline to paralysis: p = %1.3f\n',p13);
 end
+%}
 
 %% Make some plots
 % Plot % correct for each reviewer by method
-plot_correct(all_reads,results_folder)
+%plot_correct(all_reads,results_folder)
 
 end
