@@ -14,7 +14,7 @@ for m = 1:3
     
     % Calculate proportion of all assignments in each category (1 = sz; 0 =  no
     % sz)
-    p_sz = sum(sum(curr_method))/(n_eegs*n_reviewers);
+    p_sz = sum(sum(curr_method==1))/(n_eegs*n_reviewers);
     p_no = sum(sum(curr_method==0))/(n_eegs*n_reviewers);
     
     % Calculate how much raters agree for each eeg

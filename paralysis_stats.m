@@ -14,20 +14,24 @@ for i = 1:3 % Loop over methods
     method(i).correct = is_read_correct(method(i).dc,method(4).dc); % method(4) is report
 end
 
+%{
 %% Concatenate into one long vector (treating all reads as independent)
 for i = 1:3 % Loop over methods
     method(i).correct_vec = method(i).correct(:);
     method(i).conf_vec = method(i).conf(:);
 end
+%}
 
 %% Convert baseline reads into one matrix
 all_ep_or_no = nan(size(method(1).correct,2),size(method(1).correct,1),3);
+% n_reviewers x n_eegs x n_methods
 for i = 1:3 % loop over methods
     all_ep_or_no(:,:,i) = method(i).dc'; % transpose to convert to n_reviewers x n_eegs
 end
 
 %% Convert confidence into one matrix
 all_conf = nan(size(method(1).correct,2),size(method(1).correct,1),3);
+% n_reviewers x n_eegs x n_methods
 for i = 1:3
     all_conf(:,:,i) = method(i).conf';
 end
@@ -35,12 +39,11 @@ end
 %% Convert accuracy into one matrix
 % Convert into one single 3 dimensional matrix n_reviewers  x n_eegs x
 % n_methods
-all_reads = nan(size(method(1).correct,2),size(method(1).correct,1),3);
+all_acc = nan(size(method(1).correct,2),size(method(1).correct,1),3);
 for i = 1:3 % loop over methods
-    all_reads(:,:,i) = method(i).correct'; % transpose to convert to n_reviewers x n_eegs
+    all_acc(:,:,i) = method(i).correct'; % transpose to convert to n_reviewers x n_eegs
 end
 n_eegs = size(all_reads,2);
-n_reviewers = size(all_reads,1);
 
 %% Basic info
 % How many patients are seizing?
@@ -117,6 +120,6 @@ end
 
 %% Make some plots
 % Plot % correct for each reviewer by method
-%plot_correct(all_reads,results_folder)
+%plot_correct(all_acc,results_folder)
 
 end

@@ -1,18 +1,13 @@
 function p_val = bootstrap_stats(all_reads,truth,all_conf,nb)
 
+%{
+I sample the EEGs with replacement to generate data for a confidence
+interval
+%}
+
 n_eegs = size(all_reads,2);
 n_methods = size(all_reads,3);
 n_reads = size(all_reads,1)*size(all_reads,2);
-
-%% Get an accuracy matrix
-% 1 if the read is correct, 0 if incorrect
-accuracy = nan(size(all_reads));
-for m = 1:n_methods
-    reads = squeeze(all_reads(:,:,m));
-    correct = is_read_correct(reads',truth);
-    accuracy(:,:,m) = correct';
-end
-
 
 %% Initialize permutation arrays
 diff_acc_boot = nan(nb,1);
@@ -35,6 +30,7 @@ for ib = 1:nb
     %% Get fake reads assuming these eegs
     fake_baseline = baseline(:,which_eegs);
     fake_ar = ar(:,which_eegs);
+    fake_truth = truth(which_eegs);
     
     %% Get fake conf assuming these eegs
     fake_baseline_conf = baseline_conf(:,which_eegs);
@@ -43,8 +39,8 @@ for ib = 1:nb
     %% Get new accuracies
     % Note that I need to update the truth array to contain whether the
     % corresponding new eegs have discharges or not
-    fake_accuracy_baseline = is_read_correct(fake_baseline',truth(which_eegs));
-    fake_accuracy_ar = is_read_correct(fake_ar',truth(which_eegs));
+    fake_accuracy_baseline = is_read_correct(fake_baseline',fake_truth);
+    fake_accuracy_ar = is_read_correct(fake_ar',fake_truth);
     
     
     acc_fake_baseline = sum(sum(fake_accuracy_baseline))/n_reads;
@@ -62,7 +58,7 @@ for ib = 1:nb
     %% Get new sensitivity and specificity
     % Note that I need to update the truth array to contain whether the
     % corresponding new eegs have discharges or not
-    [fake_sens,fake_spec] = sens_and_spec(fake_reads,truth(which_eegs));
+    [fake_sens,fake_spec] = sens_and_spec(fake_reads,fake_truth);
     fake_sens_diff = fake_sens(2)-fake_sens(1);
     fake_spec_diff = fake_spec(2)-fake_spec(1);
     diff_sens_boot(ib) = fake_sens_diff;
@@ -93,7 +89,7 @@ diff_sens_boot = sort(diff_sens_boot);
 num_zero_or_less_sens = sum(diff_sens_boot <= 0);
 per_zero_or_less_sens = num_zero_or_less_sens/nb;
 
-%% Sort the bootstrap sens differences
+%% Sort the bootstrap spec differences
 diff_spec_boot = sort(diff_spec_boot);
 % Calculate how many are zero or less
 num_zero_or_less_spec = sum(diff_spec_boot <= 0);
