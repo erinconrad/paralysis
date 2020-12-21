@@ -43,7 +43,7 @@ all_acc = nan(size(method(1).correct,2),size(method(1).correct,1),3);
 for i = 1:3 % loop over methods
     all_acc(:,:,i) = method(i).correct'; % transpose to convert to n_reviewers x n_eegs
 end
-n_eegs = size(all_reads,2);
+n_eegs = size(all_ep_or_no,2);
 
 %% Basic info
 % How many patients are seizing?
