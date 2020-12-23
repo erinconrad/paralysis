@@ -1,4 +1,4 @@
-function p_val = bootstrap_stats(all_reads,truth,all_conf,nb)
+function p_val = bootstrap_stats(all_reads,truth,all_conf,nb,two_stage)
 
 %{
 I sample the EEGs with replacement to generate data for a confidence
@@ -6,7 +6,7 @@ interval
 %}
 
 n_eegs = size(all_reads,2);
-n_methods = size(all_reads,3);
+n_raters = size(all_reads,1);
 n_reads = size(all_reads,1)*size(all_reads,2);
 
 %% Initialize permutation arrays
@@ -31,6 +31,14 @@ for ib = 1:nb
     fake_baseline = baseline(:,which_eegs);
     fake_ar = ar(:,which_eegs);
     fake_truth = truth(which_eegs);
+    
+    if two_stage == 1
+        %% Now, randomly sample with replacement n_reads
+        % This is the 2nd stage of two-stage bootstrapping
+        which_raters = randi(n_raters,n_raters,1);
+        fake_baseline = fake_baseline(which_raters,:);
+        fake_ar = fake_ar(which_raters,:);
+    end
     
     %% Get fake conf assuming these eegs
     fake_baseline_conf = baseline_conf(:,which_eegs);

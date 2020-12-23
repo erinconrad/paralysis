@@ -1,6 +1,17 @@
 function paralysis_stats
 
+%{
+I added some papers to paperpile suggesting that a single stage bootstrap
+analysis is a reasonable way to handle clustered data.
+
+I need to figure out the right way to get a p-value from the bootstrap. I
+think I may need to multiply my current p value by 2 to get a 2 sided test,
+but unsure.
+
+%}
+
 %% Parameters
+two_stage = 0;
 data_folder = '../data/';
 file_name = 'Persyst Data Raw 11-30-20.xls';
 results_folder = '../results/';
@@ -51,12 +62,7 @@ fprintf('\n\n%d of %d patients had epileptiform discharges per clinical report.\
     sum(method(4).dc),n_eegs);
 
 %% Bootstrap statistics
-pval = bootstrap_stats(all_ep_or_no,method(4).dc,all_conf,1e4);
-
-%% Permutation test statistics
-%pval = more_general_perm_test(all_ep_or_no,method(4).dc);
-
-
+pval = bootstrap_stats(all_ep_or_no,method(4).dc,all_conf,1e4,two_stage);
 
 %% Compare percentages correct
 n_reads = length(method(1).correct(:));
@@ -66,20 +72,6 @@ fprintf('AR: %1.1f%%\n',sum(method(2).correct(:))/n_reads*100);
 fprintf('Paralysis: %1.1f%%\n',sum(method(3).correct(:))/n_reads*100);
 fprintf('Accuracy p-value: %1.3f\n',pval.acc);
 
-%% Are reads more often correct for each compared to baseline by McNemar test
-%{
-p12 = mcnemar_test([method(1).correct_vec,method(2).correct_vec]);
-p13 = mcnemar_test([method(1).correct_vec,method(3).correct_vec]);
-fprintf('\n\nMcNemar test comparing baseline to AR: p = %1.3f\n',p12);
-fprintf('McNemar test comparing baseline to paralysis: p = %1.3f\n',p13);
-%}
-
-%% CMH test
-%cmh(all_reads);
-
-
-%[pperm,~,~] = perm_test(all_reads,1,perm_vecs);
-%fprintf('\n\nPermuation test comparing baseline to AR: p = %1.3f\n',pperm);
 
 %% Compare kappa statistics
 kappa = fleiss_kappa(all_ep_or_no);
@@ -106,17 +98,36 @@ fprintf('AR: %1.1f%%\n',sum(method(2).conf(:))/n_reads*100);
 fprintf('Paralysis: %1.1f%%\n',sum(method(3).conf(:))/n_reads*100);
 fprintf('Confidence p-value: %1.3f\n',pval.conf);
 
-%% Are reads more often confident for each compared to baseline by McNemar test
-%{
-p12 = mcnemar_test([method(1).conf_vec,method(2).conf_vec]);
-p13 = mcnemar_test([method(1).conf_vec,method(3).conf_vec]);
-fprintf('\n\nMcNemar test comparing baseline to AR: p = %1.3f\n',p12);
-if p13<0.001
-    fprintf('McNemar test comparing baseline to paralysis: p < 0.001\n');
-else
-    fprintf('McNemar test comparing baseline to paralysis: p = %1.3f\n',p13);
-end
-%}
+%% Breakdown by artifact type
+twitch = method(4).artifact == 1;
+emg = method(4).artifact == 0;
+fprintf('\nThe predominant artifact was twitch for %d and EMG for %d\n',...
+    sum(twitch),sum(emg));
+n_raters = size(method(1).correct,2);
+
+% Accuracies
+fprintf('\n\nAverage percent reads that are correct:\n');
+fprintf('Baseline: %1.1f%% for twitch, %1.1f%% for EMG\n',...
+    sum(sum(method(1).correct(twitch,:)))/n_raters/sum(twitch)*100,...
+    sum(sum(method(1).correct(emg,:)))/n_raters/sum(emg)*100);
+fprintf('AR: %1.1f%% for twitch, %1.1f%% for EMG\n',...
+    sum(sum(method(2).correct(twitch,:)))/n_raters/sum(twitch)*100,...
+    sum(sum(method(2).correct(emg,:)))/n_raters/sum(emg)*100);
+fprintf('Paralysis: %1.1f%% for twitch, %1.1f%% for EMG\n',...
+    sum(sum(method(3).correct(twitch,:)))/n_raters/sum(twitch)*100,...
+    sum(sum(method(3).correct(emg,:)))/n_raters/sum(emg)*100);
+
+% Kappas
+kappa_twitch = fleiss_kappa(all_ep_or_no(:,twitch,:));
+kappa_emg = fleiss_kappa(all_ep_or_no(:,emg,:));
+fprintf('\n\nKappa statistics:\n');
+fprintf('Baseline: %1.2f twitch, %1.2f emg\n',kappa_twitch(1),kappa_emg(1));
+fprintf('AR: %1.2f twitch, %1.2f emg\n',kappa_twitch(2),kappa_emg(2));
+fprintf('Paralysis: %1.2f twitch, %1.2f emg\n',kappa_twitch(3),kappa_emg(3));
+
+% two sample bootstrap
+p_val_two = two_sample_bootstrap(all_ep_or_no,method(4).dc,method(4).artifact,1e4);
+fprintf('P value comparing AR kappa for twitch to EMG: %1.3f\n',p_val_two.kappa_ar);
 
 %% Make some plots
 % Plot % correct for each reviewer by method

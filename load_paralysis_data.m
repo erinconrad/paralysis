@@ -11,6 +11,7 @@ numSheets = length(sheetNames);
 cc_tbl = readtable(file_path, 'Sheet', 2);
 cc_id = cc_tbl.record_id;
 ep_true = cc_tbl.epileptiform_post_report;
+art = cc_tbl.artifact_pre;
 
 tbl = readtable(file_path,'Sheet',3);
 pre_id = tbl.record_id;
@@ -33,6 +34,7 @@ par_conf = [tbl.R1_EC,tbl.R2_MG,tbl.R4_RR,tbl.R5_CE];
 %% Sort by id to align everything
 [cc_id,I] = sort(cc_id);
 ep_true = ep_true(I);
+art = art(I);
 
 [pre_id,I] = sort(pre_id);
 pre = pre(I,:);
@@ -69,5 +71,6 @@ method(3).ids = par_id;
 method(4).name = 'true';
 method(4).dc = logical(ep_true);
 method(4).ids = cc_id;
+method(4).artifact = art;
 
 end
