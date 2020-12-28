@@ -5,9 +5,6 @@ I sample the EEGs with replacement to generate data for a confidence
 interval
 %}
 
-n_eegs = size(all_reads,2);
-n_raters = size(all_reads,1);
-n_reads = size(all_reads,1)*size(all_reads,2);
 
 twitch = artifact == 1;
 emg = artifact == 0;
@@ -27,7 +24,7 @@ for ib = 1:nb
     emg_truth = truth(emg);
     
     %% Separately sample the twitch and emg eegs with replacement
-    which_twitch = randi(ntwitch,ntwitch,1);
+    which_twitch = randi(ntwitch,ntwitch,1); % resample within the twitch eegs
     which_emg = randi(nemg,nemg,1);
     
     %% Get fake reads assuming these eegs
@@ -40,7 +37,7 @@ for ib = 1:nb
     kappa_twitch = fleiss_kappa(fake_twitch);
     kappa_emg = fleiss_kappa(fake_emg);
     
-    kappa_ar_diff = kappa_emg(2) - kappa_twitch(2);
+    kappa_ar_diff = kappa_emg(2) - kappa_twitch(2); % is AR kappa better for emg than twitch?
     diff_kappa_ar_boot(ib) = kappa_ar_diff;
     
 end
