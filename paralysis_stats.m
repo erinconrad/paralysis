@@ -15,7 +15,6 @@ two_stage = 0;
 data_folder = '../data/';
 file_name = 'Persyst Data Raw 11-30-20.xls';
 results_folder = '../results/';
-perm_vecs = 1; % shuffle rows rather than elements in permutation test
 
 %% Get data
 method = load_paralysis_data(data_folder,file_name);
