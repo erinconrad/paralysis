@@ -97,6 +97,10 @@ fprintf('AR: %1.1f%%\n',sum(method(2).conf(:))/n_reads*100);
 fprintf('Paralysis: %1.1f%%\n',sum(method(3).conf(:))/n_reads*100);
 fprintf('Confidence p-value: %1.3f\n',pval.conf);
 
+%% Get individual reviewer stats
+rev = individual_reviewer_stats(all_ep_or_no,method(4).dc);
+
+
 %% Breakdown by artifact type
 twitch = method(4).artifact == 1;
 emg = method(4).artifact == 0;

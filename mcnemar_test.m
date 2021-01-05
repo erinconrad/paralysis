@@ -1,4 +1,4 @@
-function pval = mcnemar_test(correct)
+function [pval,chi2] = mcnemar_test(correct)
 
 a = sum(correct(:,1) & correct(:,2));% orig correct, ar correct
 b = sum(correct(:,1) & ~correct(:,2));% orig correct, ar incorrect
@@ -19,6 +19,7 @@ end
 
 pval = 0;
 n = new_b + new_c;
+
 for i = new_b:n
     pval = pval + nchoosek(n,i);
 end
