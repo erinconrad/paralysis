@@ -8,6 +8,8 @@ I need to figure out the right way to get a p-value from the bootstrap. I
 think I may need to multiply my current p value by 2 to get a 2 sided test,
 but unsure.
 
+Figure out the twitch/EMG thing
+
 %}
 
 %% Parameters
@@ -128,9 +130,16 @@ fprintf('Baseline: %1.2f twitch, %1.2f emg\n',kappa_twitch(1),kappa_emg(1));
 fprintf('AR: %1.2f twitch, %1.2f emg\n',kappa_twitch(2),kappa_emg(2));
 fprintf('Paralysis: %1.2f twitch, %1.2f emg\n',kappa_twitch(3),kappa_emg(3));
 
+% Accuracy increase
+fprintf('\n\nIncrease in accuracy from baseline to AR:\n');
+fprintf('Twitch: %1.1f%%, EMG: %1.1f%%\n',...
+    (sum(sum(all_acc(:,twitch,2),2),1)-sum(sum(all_acc(:,twitch,1),2),1))/n_raters/sum(twitch)*100,...
+    (sum(sum(all_acc(:,emg,2),2),1)-sum(sum(all_acc(:,emg,1),2),1))/n_raters/sum(emg)*100);
+
 % two sample bootstrap
-p_val_two = two_sample_bootstrap(all_ep_or_no,method(4).dc,method(4).artifact,1e4);
-fprintf('P value comparing AR kappa for twitch to EMG: %1.3f\n',p_val_two.kappa_ar);
+p_val_two = two_sample_bootstrap(all_ep_or_no,method(4).dc,method(4).artifact,all_acc,1e4);
+fprintf('P value comparing AR accuracy increase for twitch to EMG: %1.3f\n',p_val_two.acc_ar);
+%fprintf('P value comparing AR kappa for twitch to EMG: %1.3f\n',p_val_two.kappa_ar);
 
 %% Make some plots
 % Plot % correct for each reviewer by method
