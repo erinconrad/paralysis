@@ -1,21 +1,16 @@
-function paralysis_stats
+clear
 
 %{
 I added some papers to paperpile suggesting that a single stage bootstrap
 analysis is a reasonable way to handle clustered data.
 
-I need to figure out the right way to get a p-value from the bootstrap. I
-think I may need to multiply my current p value by 2 to get a 2 sided test,
-but unsure.
-
-Figure out the twitch/EMG thing
 
 %}
 
 %% Parameters
 two_stage = 0;
 data_folder = '../data/';
-file_name = 'Persyst Data Raw 11-30-20.xls';
+file_name = 'Persyst Data Raw 02-04-21.xls';
 results_folder = '../results/';
 
 %% Get data
@@ -104,45 +99,39 @@ rev = individual_reviewer_stats(all_ep_or_no,method(4).dc);
 
 
 %% Breakdown by artifact type
-twitch = method(4).artifact == 1;
-emg = method(4).artifact == 0;
-fprintf('\nThe predominant artifact was twitch for %d and EMG for %d\n',...
-    sum(twitch),sum(emg));
+emg = method(4).artifact == 1;
+emg_no = method(4).artifact == 0;
+fprintf('\nThere was lots of EMG in %d and little EMG for %d\n',...
+    sum(emg),sum(emg_no));
 n_raters = size(method(1).correct,2);
+
 
 % Accuracies
 fprintf('\n\nAverage percent reads that are correct:\n');
-fprintf('Baseline: %1.1f%% for twitch, %1.1f%% for EMG\n',...
-    sum(sum(method(1).correct(twitch,:)))/n_raters/sum(twitch)*100,...
-    sum(sum(method(1).correct(emg,:)))/n_raters/sum(emg)*100);
-fprintf('AR: %1.1f%% for twitch, %1.1f%% for EMG\n',...
-    sum(sum(method(2).correct(twitch,:)))/n_raters/sum(twitch)*100,...
-    sum(sum(method(2).correct(emg,:)))/n_raters/sum(emg)*100);
-fprintf('Paralysis: %1.1f%% for twitch, %1.1f%% for EMG\n',...
-    sum(sum(method(3).correct(twitch,:)))/n_raters/sum(twitch)*100,...
-    sum(sum(method(3).correct(emg,:)))/n_raters/sum(emg)*100);
+fprintf('Baseline: %1.1f%% for lots emg, %1.1f%% for little emg\n',...
+    sum(sum(method(1).correct(emg,:)))/n_raters/sum(emg)*100,...
+    sum(sum(method(1).correct(emg_no,:)))/n_raters/sum(emg_no)*100);
+fprintf('AR: %1.1f%% for lots emg, %1.1f%% for little emg\n',...
+    sum(sum(method(2).correct(emg,:)))/n_raters/sum(emg)*100,...
+    sum(sum(method(2).correct(emg_no,:)))/n_raters/sum(emg_no)*100);
+fprintf('Paralysis: %1.1f%% for lots emg, %1.1f%% for little emg\n',...
+    sum(sum(method(3).correct(emg,:)))/n_raters/sum(emg)*100,...
+    sum(sum(method(3).correct(emg_no,:)))/n_raters/sum(emg_no)*100);
 
-% Kappas
-kappa_twitch = fleiss_kappa(all_ep_or_no(:,twitch,:));
-kappa_emg = fleiss_kappa(all_ep_or_no(:,emg,:));
-fprintf('\n\nKappa statistics:\n');
-fprintf('Baseline: %1.2f twitch, %1.2f emg\n',kappa_twitch(1),kappa_emg(1));
-fprintf('AR: %1.2f twitch, %1.2f emg\n',kappa_twitch(2),kappa_emg(2));
-fprintf('Paralysis: %1.2f twitch, %1.2f emg\n',kappa_twitch(3),kappa_emg(3));
 
 % Accuracy increase
 fprintf('\n\nIncrease in accuracy from baseline to AR:\n');
-fprintf('Twitch: %1.1f%%, EMG: %1.1f%%\n',...
-    (sum(sum(all_acc(:,twitch,2),2),1)-sum(sum(all_acc(:,twitch,1),2),1))/n_raters/sum(twitch)*100,...
-    (sum(sum(all_acc(:,emg,2),2),1)-sum(sum(all_acc(:,emg,1),2),1))/n_raters/sum(emg)*100);
+fprintf('Lots EMG: %1.1f%%, Little EMG: %1.1f%%\n',...
+    (sum(sum(all_acc(:,emg,2),2),1)-sum(sum(all_acc(:,emg,1),2),1))/n_raters/sum(emg)*100,...
+    (sum(sum(all_acc(:,emg_no,2),2),1)-sum(sum(all_acc(:,emg_no,1),2),1))/n_raters/sum(emg_no)*100);
 
 % two sample bootstrap
 p_val_two = two_sample_bootstrap(all_ep_or_no,method(4).dc,method(4).artifact,all_acc,1e4);
-fprintf('P value comparing AR accuracy increase for twitch to EMG: %1.3f\n',p_val_two.acc_ar);
+fprintf('P value comparing AR accuracy increase for lots to little EMG: %1.3f\n',p_val_two.acc_ar);
 %fprintf('P value comparing AR kappa for twitch to EMG: %1.3f\n',p_val_two.kappa_ar);
 
 %% Make some plots
 % Plot % correct for each reviewer by method
-%plot_correct(all_acc,results_folder)
+%plot_correct(all_acc,results_folder,pval.acc)
+%emg_effect_plot(all_acc,emg,emg_no,p_val_two.acc_ar,results_folder)
 
-end

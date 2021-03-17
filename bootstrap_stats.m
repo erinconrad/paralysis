@@ -85,6 +85,14 @@ diff_acc_boot = sort(diff_acc_boot);
 num_zero_or_less_acc = sum(diff_acc_boot <= 0);
 per_zero_or_less_acc = num_zero_or_less_acc/nb;
 
+% mean accuracy diff
+%{
+mean_acc_diff = mean(diff_acc_boot);
+sd_acc_diff = std(diff_acc_boot);
+x = tinv(0.975,nb-1);
+mean_acc_diff/sd_acc_diff
+%}
+
 %% Sort the bootstrap kappa differences
 diff_kappa_boot = sort(diff_kappa_boot);
 % Calculate how many are zero or less

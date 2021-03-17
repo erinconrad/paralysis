@@ -6,33 +6,35 @@ interval
 %}
 
 
-twitch = artifact == 1;
-emg = artifact == 0;
+emg = artifact == 1;
+emg_no = artifact == 0;
 
-ntwitch = sum(twitch);
 nemg = sum(emg);
+nemg_no = sum(emg_no);
 
 diff_kappa_ar_boot = nan(nb,1);
 diff_acc_ar_boot = nan(nb,1);
 
 for ib = 1:nb
     
-    twitch_acc = all_acc(:,twitch,:);
+    %% Separate EEGs with lots and little emg
     emg_acc = all_acc(:,emg,:);
+    emg_no_acc = all_acc(:,emg_no,:);
     
-    %% Separately sample the twitch and emg eegs with replacement
-    which_twitch = randi(ntwitch,ntwitch,1); % resample within the twitch eegs
-    which_emg = randi(nemg,nemg,1);
+    %% Separately sample the lots and little emg eegs with replacement
+    which_emg = randi(nemg,nemg,1); % resample within the twitch eegs
+    which_emg_no = randi(nemg_no,nemg_no,1);
     
-    fake_twitch_acc = sum(sum(twitch_acc(:,which_twitch,:),2),1);
+    %% Make new fake lots and little emg EEGs from the resampled EEGs
     fake_emg_acc = sum(sum(emg_acc(:,which_emg,:),2),1);
+    fake_emg_no_acc = sum(sum(emg_no_acc(:,which_emg_no,:),2),1);
     
     %% take the difference between pre-AR and post-AR
-    pre_post_twitch_acc = fake_twitch_acc(2) - fake_twitch_acc(1);
     pre_post_emg_acc = fake_emg_acc(2) - fake_emg_acc(1);
+    pre_post_emg_no_acc = fake_emg_no_acc(2) - fake_emg_no_acc(1);
     
-    %% Now get difference between emg and twitch (is improvement in twitch better than emg)?
-    diff_pre_post_acc = pre_post_twitch_acc-pre_post_emg_acc;
+    %% Now get difference between lots and little emg (is improvement in lots emg better than little emg)?
+    diff_pre_post_acc = pre_post_emg_acc-pre_post_emg_no_acc;
     diff_acc_ar_boot(ib) = diff_pre_post_acc;
     %{
     twitch_reads = all_reads(:,twitch,:);
@@ -70,7 +72,7 @@ diff_acc_ar_boot = sort(diff_acc_ar_boot);
 num_zero_or_less_acc_ar = sum(diff_acc_ar_boot <= 0);
 per_zero_or_less_acc_ar = num_zero_or_less_acc_ar/nb;
 
-p_val.acc_ar = per_zero_or_less_acc_ar;
+p_val.acc_ar = 2*per_zero_or_less_acc_ar;
 
 %{
 %% Sort the bootstrap kappa differences
