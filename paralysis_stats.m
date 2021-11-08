@@ -8,10 +8,13 @@ analysis is a reasonable way to handle clustered data.
 %}
 
 %% Parameters
-two_stage = 0;
+two_stage = 0; % I think this should be zero
 data_folder = '../data/';
-file_name = 'Persyst Data Raw 02-04-21.xls';
+file_name = 'Persyst Data Raw 11-7-21 Erin edits';%';'Persyst Data Raw 02-04-21.xls';
 results_folder = '../results/';
+
+%% seed a rng so same result each time
+rng(0)
 
 %% Get data
 method = load_paralysis_data(data_folder,file_name);
@@ -21,13 +24,6 @@ for i = 1:3 % Loop over methods
     method(i).correct = is_read_correct(method(i).dc,method(4).dc); % method(4) is report
 end
 
-%{
-%% Concatenate into one long vector (treating all reads as independent)
-for i = 1:3 % Loop over methods
-    method(i).correct_vec = method(i).correct(:);
-    method(i).conf_vec = method(i).conf(:);
-end
-%}
 
 %% Convert baseline reads into one matrix
 all_ep_or_no = nan(size(method(1).correct,2),size(method(1).correct,1),3);
@@ -59,6 +55,7 @@ fprintf('\n\n%d of %d patients had epileptiform discharges per clinical report.\
 
 %% Bootstrap statistics
 pval = bootstrap_stats(all_ep_or_no,method(4).dc,all_conf,1e4,two_stage);
+main_pval = pval;
 
 %% Compare percentages correct
 n_reads = length(method(1).correct(:));
@@ -66,7 +63,8 @@ fprintf('\n\nAverage percent reads that are correct:\n');
 fprintf('Baseline: %1.1f%%\n',sum(method(1).correct(:))/n_reads*100);
 fprintf('AR: %1.1f%%\n',sum(method(2).correct(:))/n_reads*100);
 fprintf('Paralysis: %1.1f%%\n',sum(method(3).correct(:))/n_reads*100);
-fprintf('Accuracy p-value: %1.3f\n',pval.acc);
+fprintf('Accuracy p-value baseline vs AR: %1.3f\n',pval.acc(1));
+fprintf('Accuracy p-value baseline vs paralysis: %1.3f\n',pval.acc(2));
 
 
 %% Compare kappa statistics
@@ -75,7 +73,9 @@ fprintf('\n\nKappa statistics:\n');
 fprintf('Baseline: %1.2f\n',kappa(1));
 fprintf('AR: %1.2f\n',kappa(2));
 fprintf('Paralysis: %1.2f\n',kappa(3));
-fprintf('Kappa p-value: %1.3f\n',pval.kappa);
+fprintf('Kappa p-value baseline vs AR: %1.3f\n',pval.kappa(1));
+fprintf('Kappa p-value baseline vs paralysis: %1.3f\n',pval.kappa(2));
+
 
 %% Compare sensitivity and specificity
 [sensitivity,specificity] = sens_and_spec(all_ep_or_no,method(4).dc);
@@ -83,8 +83,10 @@ fprintf('\n\nSensitivity and specificity (respectively):\n');
 fprintf('Baseline: %1.1f%%, %1.1f%%\n',sensitivity(1)*100,specificity(1)*100);
 fprintf('AR: %1.1f%%, %1.1f%%\n',sensitivity(2)*100,specificity(2)*100);
 fprintf('Paralysis: %1.1f%%, %1.1f%%\n',sensitivity(3)*100,specificity(3)*100);
-fprintf('Sensitivity p-value: %1.3f\n',pval.sens);
-fprintf('Specificity p-value: %1.3f\n',pval.spec);
+fprintf('Sensitivity p-value baseline vs AR: %1.3f\n',pval.sens(1));
+fprintf('Sensitivity p-value baseline vs paralysis: %1.3f\n\n',pval.sens(2));
+fprintf('Specificity p-value baseline vs AR: %1.3f\n',pval.spec(1));
+fprintf('Specificity p-value baseline vs paralysis: %1.3f\n',pval.spec(2));
 
 
 %% Compare confidence of reads
@@ -92,7 +94,8 @@ fprintf('\n\nAverage percent reads that are confident:\n');
 fprintf('Baseline: %1.1f%%\n',sum(method(1).conf(:))/n_reads*100);
 fprintf('AR: %1.1f%%\n',sum(method(2).conf(:))/n_reads*100);
 fprintf('Paralysis: %1.1f%%\n',sum(method(3).conf(:))/n_reads*100);
-fprintf('Confidence p-value: %1.3f\n',pval.conf);
+fprintf('Confidence p-value baseline vs AR: %1.3f\n',pval.conf(1));
+fprintf('Confidence p-value baseline vs paralysis: %1.3f\n',pval.conf(2));
 
 %% Get individual reviewer stats
 rev = individual_reviewer_stats(all_ep_or_no,method(4).dc);
@@ -130,8 +133,87 @@ p_val_two = two_sample_bootstrap(all_ep_or_no,method(4).dc,method(4).artifact,al
 fprintf('P value comparing AR accuracy increase for lots to little EMG: %1.3f\n',p_val_two.acc_ar);
 %fprintf('P value comparing AR kappa for twitch to EMG: %1.3f\n',p_val_two.kappa_ar);
 
+%% Post-hoc analysis, is the increase in accuracy for EMG-heavy EEGs significant?
+fprintf('\nResults for post-hoc analysis looking at EMG-heavy EEGs (%d of %d):\n',...
+    sum(emg),length(emg));
+% Get the patients with lots of emg
+sub_all_ep_or_no = all_ep_or_no(:,emg,:);
+sub_dc = method(4).dc(emg);
+sub_all_conf = all_conf(:,emg,:);
+n_reads_sub = sum(emg)*size(method(1).correct,2);
+
+% Do the bootstrap analysis
+pval = bootstrap_stats(sub_all_ep_or_no,sub_dc,sub_all_conf,1e4,two_stage);
+emg_heavy_pval = pval;
+
+% Compare percentages correct for post-hoc EMG-heavy analysis
+n_reads = length(method(1).correct(:));
+fprintf('\n\nAverage percent reads that are correct for EMG-heavy EEGs:\n');
+fprintf('Baseline: %1.1f%%\n',sum(sum(method(1).correct(emg,:)))/n_reads_sub*100);
+fprintf('AR: %1.1f%%\n',sum(sum(method(2).correct(emg,:)))/n_reads_sub*100);
+fprintf('Paralysis: %1.1f%%\n',sum(sum(method(3).correct(emg,:)))/n_reads_sub*100);
+fprintf('Accuracy p-value baseline vs AR: %1.3f\n',pval.acc(1));
+fprintf('Accuracy p-value baseline vs paralysis: %1.3f\n',pval.acc(2));
+
+% Compare percentages correct for post-hoc EMG-heavy analysis
+kappa = fleiss_kappa(sub_all_ep_or_no);
+fprintf('\n\nKappa statistics for EMG-heavy EEGs:\n');
+fprintf('Baseline: %1.2f\n',kappa(1));
+fprintf('AR: %1.2f\n',kappa(2));
+fprintf('Paralysis: %1.2f\n',kappa(3));
+fprintf('Kappa p-value baseline vs AR: %1.3f\n',pval.kappa(1));
+fprintf('Kappa p-value baseline vs paralysis: %1.3f\n',pval.kappa(2));
+
+
+% Compare sensitivity and specificity for post-hoc EMG-heavy analysis
+[sensitivity,specificity] = sens_and_spec(sub_all_ep_or_no,sub_dc);
+fprintf('\n\nSensitivity and specificity (respectively) for EMG-heavy EEGs:\n');
+fprintf('Baseline: %1.1f%%, %1.1f%%\n',sensitivity(1)*100,specificity(1)*100);
+fprintf('AR: %1.1f%%, %1.1f%%\n',sensitivity(2)*100,specificity(2)*100);
+fprintf('Paralysis: %1.1f%%, %1.1f%%\n',sensitivity(3)*100,specificity(3)*100);
+fprintf('Sensitivity p-value baseline vs AR: %1.3f\n',pval.sens(1));
+fprintf('Sensitivity p-value baseline vs paralysis: %1.3f\n\n',pval.sens(2));
+fprintf('Specificity p-value baseline vs AR: %1.3f\n',pval.spec(1));
+fprintf('Specificity p-value baseline vs paralysis: %1.3f\n',pval.spec(2));
+
+
+% Compare confidence of reads for post-hoc EMG heavy analysis
+fprintf('\n\nAverage percent reads that are confident for EMG-heavy EEGs:\n');
+fprintf('Baseline: %1.1f%%\n',sum(sum(method(1).conf(emg,:)))/n_reads_sub*100);
+fprintf('AR: %1.1f%%\n',sum(sum(method(2).conf(emg,:)))/n_reads_sub*100);
+fprintf('Paralysis: %1.1f%%\n',sum(sum(method(3).conf(emg,:)))/n_reads_sub*100);
+fprintf('Confidence p-value baseline vs AR: %1.3f\n',pval.conf(1));
+fprintf('Confidence p-value baseline vs paralysis: %1.3f\n',pval.conf(2));
+
+%% Does the presence of discharges predict survival to discharge?
+survival = method(4).survival;
+dc = method(4).dc;
+
+% get 2x2 table
+tbl = crosstab(survival,dc);
+[~,p,stats] = fishertest(tbl);
+or = stats.OddsRatio;
+
+% descriptive stats
+n_surv_with_dc = sum(survival & dc);
+perc_surv_with_dc = n_surv_with_dc/sum(dc)*100;
+
+n_surv_without_dc = sum(survival & ~dc);
+perc_surv_without_dc = n_surv_without_dc/sum(~dc)*100;
+
+fprintf(['\nDoes the presence of discharges (per report) predict '...
+    'survival to hospital discharge?:\n'...
+'%d of %d (%1.1f%%) patients with discharges survived to leave the hospital.\n'...
+'%d of %d (%1.1f%%) patients without discharges survived to leave the hospital\n'...
+'OR %1.1f, p = %1.3f.\n'],...
+n_surv_with_dc,sum(dc),perc_surv_with_dc,...
+n_surv_without_dc,sum(~dc),perc_surv_without_dc,...
+or,p);
+
+
 %% Make some plots
 % Plot % correct for each reviewer by method
-%plot_correct(all_acc,results_folder,pval.acc)
+plot_correct(all_acc,results_folder,main_pval.acc,'all')
+plot_correct(all_acc(:,emg,:),results_folder,emg_heavy_pval.acc,'EMG-heavy')
 %emg_effect_plot(all_acc,emg,emg_no,p_val_two.acc_ar,results_folder)
 

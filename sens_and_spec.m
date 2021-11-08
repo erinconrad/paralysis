@@ -8,12 +8,12 @@ specificity = zeros(3,1);
 
 %% Make classification tables
 for m = 1:3 % loop over methods
-    a = 0;
+    a = 0; % true pos
     b = 0; % false pos
     c = 0; % false neg
-    d = 0;
-    for r = 1:n_reviewers
-        for e = 1:n_eegs
+    d = 0; % true neg
+    for r = 1:n_reviewers % loop over reviewers
+        for e = 1:n_eegs % loop over eegs
 
             % Get element
             element = all(r,e,m);
@@ -31,8 +31,8 @@ for m = 1:3 % loop over methods
         end
     end
     
-    sensitivity(m) = a/(a+c);
-    specificity(m) = d/(b+d);
+    sensitivity(m) = a/(a+c); %tp/(tp + fn)
+    specificity(m) = d/(b+d); %tn/(tn+fp)
     
 end
     

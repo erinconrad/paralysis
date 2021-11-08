@@ -19,10 +19,13 @@ for m = 1:3
     
     % Calculate how much raters agree for each eeg
     p_eegs = zeros(n_eegs,1);
-    for e = 1:n_eegs
+    
+    for e = 1:n_eegs % Loop over eegs
         temp_p = 0;
-        for k = 0:1
+        for k = 0:1 % Loop over no sz or sz
             num_raters_assigning_to_cat = sum(curr_method(:,e) == k);
+            
+            % increase index of agreement
             temp_p = temp_p + num_raters_assigning_to_cat*(num_raters_assigning_to_cat-1);
         end
         temp_p = 1/(n_reviewers*(n_reviewers-1))*(temp_p);

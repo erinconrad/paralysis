@@ -69,6 +69,8 @@ function varargout=sigstar(groups,stats,nosort)
     % Rob Campbell - CSHL 2013
 
 
+    %% How much to pad
+    buffer = 0.15;
 
     %Input argument error checking
 
@@ -105,7 +107,7 @@ function varargout=sigstar(groups,stats,nosort)
     end
 
 
-
+    
 
 
 
@@ -178,11 +180,11 @@ function varargout=sigstar(groups,stats,nosort)
     H=ones(length(groups),2); %The handles will be stored here
 
     y=ylim;
-    yd=myRange(y)*0.05; %separate sig bars vertically by 5% 
+    yd=myRange(y)*buffer; %separate sig bars vertically by 5% 
 
     for ii=1:length(groups)
         thisY=findMinY(xlocs(ii,:))+yd;
-        H(ii,:)=makeSignificanceBar(xlocs(ii,:),thisY,stats(ii));
+        H(ii,:)=makeSignificanceBar(xlocs(ii,:),thisY,stats(ii),buffer);
     end
     %-----------------------------------------------------
 
@@ -227,7 +229,7 @@ end %close sigstar
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Internal functions
 
-function H=makeSignificanceBar(x,y,p)
+function H=makeSignificanceBar(x,y,p,buffer)
     %makeSignificanceBar produces the bar and defines how many asterisks we get for a 
     %given p-value
 
@@ -253,8 +255,10 @@ function H=makeSignificanceBar(x,y,p)
     %instead of a star. 
     if ~isnan(p)
         offset=0.005;
+        fontsize = 40;
     else
-        offset=0.02;
+        offset=0.1;
+        fontsize = 20;
     end
 
     starY=mean(y)+myRange(ylim)*offset;
@@ -262,11 +266,11 @@ function H=makeSignificanceBar(x,y,p)
         'HorizontalAlignment','Center',...
         'BackGroundColor','none',...
         'Tag','sigstar_stars',...
-        'fontsize',40);
+        'fontsize',fontsize);
 
     Y=ylim;
     if Y(2)<starY
-        ylim([Y(1),starY+myRange(Y)*0.05])
+        ylim([Y(1),starY+myRange(Y)*buffer])
     end
 
 
@@ -296,7 +300,8 @@ function Y=findMinY(x)
     Y = max(yLim);
 
     axis(gca,'normal')
-    set(gca,'XLim',oldXLim,'YLim',oldYLim)
+    %set(gca,'XLim',oldXLim,'YLim',oldYLim)
+    %set(gca,'XLim',oldXLim,'YLim',[yLim(1) )
 
 end %close findMinY
 
