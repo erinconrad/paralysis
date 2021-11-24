@@ -1,4 +1,4 @@
-function plot_correct(all_reads,results_folder,pval,which)
+function plot_correct(all_reads,pval,ptitle,pylabel)
 
 
 colors = [...
@@ -24,8 +24,6 @@ for i = 1:n_reviewers
     rev_nums{i} = sprintf('Reviewer %d',i);
 end
 
-figure
-set(gcf,'position',[440 484 751 314])
 for i = 1:3 % loop over methods
     
     curr_method = all_reads(:,:,i);
@@ -47,7 +45,7 @@ for i = 1:3 % loop over methods
         %}
         plot(i+x_vec(j),perc_correct(j),'wo');   
         hold on
-        text(i+x_vec(j),perc_correct(j),sprintf('%d',j),...
+        text(i+x_vec(j),perc_correct(j),sprintf('R%d',j),...
             'horizontalalignment','center','fontsize',25,...
             'color',colors(j,:));   
         
@@ -64,18 +62,19 @@ ylim([0 100])
 xlim([1+x_vec(1)-0.1,3+x_vec(end)+0.1])
 xticks([1:3]+repmat(median(x_vec),1,3))
 xticklabels({'Baseline','Artifact reduction','Paralyzed'});
-ylabel('Percent correct reads');
-title(sprintf('Average accuracy for each reviewer: %s EEGs',which));
+ylabel(pylabel);
+title(ptitle);
 
 psig = p_for_sig_bar(pval);
 sigstar({[1 2],[1 3]},psig)
 yl = ylim;
-ylim([0 yl(2)])
+%ylim([0 yl(2)])
+ylim([0 140])
 xlim([1+x_vec(1)-0.1,3+x_vec(end)+0.1])
 
 %legend([rev_id;pm],[rev_nums;'Mean'],'location','southeast','fontsize',20)
 
 set(gca,'fontsize',20)
 
-print(gcf,[results_folder,'perc_correct_',which],'-depsc')
+
 end

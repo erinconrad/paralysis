@@ -70,8 +70,10 @@ for ib = 1:nb
     
     % Take the difference between the AR and the baseline, and between the
     % paralyzed and the baseline
+    %
     diff_acc_boot(ib,:) = [acc_fake_ar-acc_fake_baseline,...
         acc_fake_par - acc_fake_baseline];
+    %}
     
     %% Get new kappa
     fake_reads(:,:,1) = fake_baseline;
@@ -88,10 +90,16 @@ for ib = 1:nb
     diff_spec_boot(ib,:) = [fake_spec(2)-fake_spec(1),fake_spec(3)-fake_spec(1)];
     
     %% Get new conf
+    temp_ar_conf = sum(sum(fake_ar_conf))/n_reads;
+    temp_baseline_conf = sum(sum(fake_baseline_conf))/n_reads;
+    temp_par_conf = sum(sum(fake_par_conf))/n_reads;
+    
+    %
     diff_conf_boot(ib,:) = [sum(sum(fake_ar_conf))/n_reads - ...
         sum(sum(fake_baseline_conf))/n_reads,...
         sum(sum(fake_par_conf))/n_reads - ...
         sum(sum(fake_baseline_conf))/n_reads];
+    %
     
     
 end

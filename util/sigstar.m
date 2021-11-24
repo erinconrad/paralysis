@@ -66,7 +66,8 @@ function varargout=sigstar(groups,stats,nosort)
     %    Simply increasing the width and height of the graph with the 
     %    PaperPosition property of the current figure should fix things.
     %
-    % Rob Campbell - CSHL 2013
+    % Rob Campbell - CSHL 2013, Edited with minor changes by Erin Conrad
+    % 2021
 
 
     %% How much to pad
@@ -257,8 +258,13 @@ function H=makeSignificanceBar(x,y,p,buffer)
         offset=0.005;
         fontsize = 40;
     else
-        offset=0.1;
+        offset=0.12;
         fontsize = 20;
+    end
+    
+    % DUMB FIX ERIN MADE
+    if mean(y) <0.3
+        offset = 0.25;
     end
 
     starY=mean(y)+myRange(ylim)*offset;

@@ -5,7 +5,8 @@ colors = [...
     0.8500 0.3250 0.0980];
 
 figure
-set(gcf,'position',[440 484 751 314])
+set(gcf,'position',[440 484 1000 314])
+tiledlayout(1,2,'tilespacing','tight','padding','tight')
 
 
 n_reviewers = size(all_acc,1);
@@ -18,31 +19,41 @@ all_no = squeeze(mean(no_emg_reads,[1]))*100;
 emg_mean = mean(all_emg,1);
 no_mean = mean(all_no,1);
 
+% emg heavy
+nexttile
 plot(emg_mean,'color',colors(1,:),'linewidth',2)
 hold on
-plot(no_mean,'color',colors(2,:),'linestyle','--','linewidth',2);
-
-
 ea = plot(1+0.1*rand(size(all_emg,1),1),all_emg(:,1),'o','color',colors(1,:),'markersize',10,'linewidth',3);
 em = plot([1-0.05 1+0.05],[emg_mean(1) emg_mean(1)],'linewidth',3,'color',colors(1,:));
-    
-na = plot(1+0.1*rand(size(all_no,1),1),all_no(:,1),'x','color',colors(2,:),'markersize',10,'linewidth',3);
-nm = plot([1-0.05 1+0.05],[no_mean(1) no_mean(1)],'linewidth',3,'color',colors(2,:),'linestyle','--');
-
 plot(2+0.1*rand(size(all_emg,1),1),all_emg(:,2),'o','color',colors(1,:),'markersize',10,'linewidth',3)
 plot([2-0.05 2+0.05],[emg_mean(2) emg_mean(2)],'linewidth',3,'color',colors(1,:))
-    
-plot(2+0.1*rand(size(all_no,1),1),all_no(:,2),'x','color',colors(2,:),'markersize',10,'linewidth',3)
-plot([2-0.05 2+0.05],[no_mean(2) no_mean(2)],'linewidth',3,'color',colors(2,:),'linestyle','--')
-
-ylim([-15 115])
-legend([ea,em,na,nm],{'Substantial EMG EEGs','Substantial EMG mean','Minimal EMG EEGs','Minimal EMG mean'},...
-    'location','south','fontsize',20)
 ylabel('Percent correct reads');
 xticks([1 2])
 xticklabels({'Baseline','Artifact reduction'});
 set(gca,'fontsize',20)
-print(gcf,[results_folder,'emg'],'-depsc')
+title('EMG-heavy EEGs');
+
+
+% emg-light
+nexttile
+plot(no_mean,'color',colors(2,:),'linestyle','--','linewidth',2);
+hold on    
+na = plot(1+0.1*rand(size(all_no,1),1),all_no(:,1),'o','color',colors(2,:),'markersize',10,'linewidth',3);
+nm = plot([1-0.05 1+0.05],[no_mean(1) no_mean(1)],'linewidth',3,'color',colors(2,:),'linestyle','--');
+plot(2+0.1*rand(size(all_no,1),1),all_no(:,2),'o','color',colors(2,:),'markersize',10,'linewidth',3)
+plot([2-0.05 2+0.05],[no_mean(2) no_mean(2)],'linewidth',3,'color',colors(2,:),'linestyle','--')
+
+%{
+ylim([-15 115])
+legend([ea,em,na,nm],{'Substantial EMG EEGs','Substantial EMG mean','Minimal EMG EEGs','Minimal EMG mean'},...
+    'location','south','fontsize',20)
+%}
+ylabel('Percent correct reads');
+xticks([1 2])
+xticklabels({'Baseline','Artifact reduction'});
+set(gca,'fontsize',20)
+title('EMG-minimal EEGs');
+%print(gcf,[results_folder,'emg'],'-depsc')
 
 if 0
 mean_emg = squeeze(mean(emg_reads,[1 2]))*100;
