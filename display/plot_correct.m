@@ -57,9 +57,9 @@ for i = 1:3 % loop over methods
    
     
 end
-
 ylim([0 100])
 xlim([1+x_vec(1)-0.1,3+x_vec(end)+0.1])
+plot(xlim,[0 0],'k-')
 xticks([1:3]+repmat(median(x_vec),1,3))
 xticklabels({'Baseline','Artifact reduction','Paralyzed'});
 ylabel(pylabel);
@@ -69,7 +69,7 @@ psig = p_for_sig_bar(pval);
 sigstar({[1 2],[1 3]},psig)
 yl = ylim;
 %ylim([0 yl(2)])
-ylim([0 140])
+ylim([0 130])
 xlim([1+x_vec(1)-0.1,3+x_vec(end)+0.1])
 
 %legend([rev_id;pm],[rev_nums;'Mean'],'location','southeast','fontsize',20)

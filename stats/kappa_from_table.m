@@ -18,4 +18,10 @@ Pe = sum(pj.^2);
 
 kappa = (Pbar-Pe)/(1-Pe);
 
+if 0
+    full_tab = [kappa_table,Pi];
+    table(full_tab)
+    
+end
+
 end

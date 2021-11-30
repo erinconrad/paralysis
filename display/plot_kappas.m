@@ -7,7 +7,7 @@ ylim([0 1])
 sigstar({[1 2],[1 3]},psig)
 yl = ylim;
 %ylim([0 yl(2)])
-ylim([0 1])
+ylim([-0.2 1.1])
 xticks([1:3])
 xlim([0 4])
 xticklabels({'Baseline','Artifact reduction','Paralyzed'});
