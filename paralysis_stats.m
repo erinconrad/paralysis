@@ -26,9 +26,11 @@ addpath(genpath('.'))
 
 %% Parameters
 two_stage = 0; % I think this should be zero
-data_folder = '../data/';
-file_name = 'Persyst Data Raw 11-30-21 Erin edits (post artifact adjudication)';%'Persyst Data Raw 11-7-21 Erin edits';%';'Persyst Data Raw 02-04-21.xls';
+data_folder = '/data/';
+file_name = 'Final Persyst Raw Data';%'Persyst Data Raw 11-7-21 Erin edits';%';'Persyst Data Raw 02-04-21.xls';
 results_folder = '../results/';
+
+if ~exist(results_folder,'dir'), mkdir(results_folder); end
 
 %% seed a rng so same result each time
 rng(0)
